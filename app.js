@@ -6,7 +6,7 @@ if ('serviceWorker' in navigator) {
 
 const app = (() => {
     // Configuration
-    const PB_URL = 'http://127.0.0.1:8090';
+    const PB_URL = 'http://localhost:8090';
     const COLLECTION = 'tasks'; // Assuming the collection name in PocketBase is 'tasks'
 
     // Local Storage Keys
