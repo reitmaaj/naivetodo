@@ -55,7 +55,7 @@ const app = (() => {
 
         return {
             id: record.id,
-            content: record.content || "",
+            content: record.task || record.content || "",
             attachment: attachments,
             _pb_attachments: record.attachments || []
         };
@@ -75,7 +75,7 @@ const app = (() => {
     async function createTask(taskData, fileToUpload = null) {
         const formData = new FormData();
         
-        formData.append('content', taskData.content);
+        formData.append('task', taskData.content);
 
         if (fileToUpload) {
             formData.append('attachments', fileToUpload);
@@ -107,7 +107,7 @@ const app = (() => {
         const { id, content } = taskData;
         
         const formData = new FormData();
-        formData.append('content', content);
+        formData.append('task', content);
 
         if (fileToUpload) {
             formData.append('attachments', fileToUpload);
