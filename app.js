@@ -94,13 +94,72 @@ const app = (() => {
             throw new Error('Failed to create task');
         }
         
-        return await response.json();
+        const record = await response.json();
+        // Update local cache
+        const tasks = getCachedTasks();
+        tasks.push(record);
+        setCachedTasks(tasks);
+
+        return flattenTask(record);
+    }
+
+    async function updateTask(id, content, filesToAdd = [], filesToDelete = []) {
+        const formData = new FormData();
+        formData.append('content', content);
+
+        filesToAdd.forEach(file => {
+            formData.append('attachments', file);
+        });
+
+        filesToDelete.forEach(filename => {
+            formData.append('attachments-', filename);
+        });
+
+        const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
+            method: 'PATCH',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            console.error('PocketBase error:', errData);
+            throw new Error('Failed to update task');
+        }
+        
+        const updatedRecord = await response.json();
+        
+        // Update local cache
+        const tasks = getCachedTasks();
+        const index = tasks.findIndex(t => t.id === updatedRecord.id);
+        if (index !== -1) {
+            tasks[index] = updatedRecord;
+            setCachedTasks(tasks);
+        }
+        
+        return flattenTask(updatedRecord);
+    }
+
+    async function deleteTask(id) {
+        const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('Failed to delete task');
+
+        // Update local cache
+        const tasks = getCachedTasks();
+        const filtered = tasks.filter(t => t.id !== id);
+        setCachedTasks(filtered);
+        
+        return true;
     }
 
     return {
         init,
         getTasks,
         getTask,
-        createTask
+        createTask,
+        updateTask,
+        deleteTask
     };
 })();

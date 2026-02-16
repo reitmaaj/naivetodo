@@ -10,10 +10,13 @@
     <div class="container">
         <header>
             <a href="index.html">Home</a> | 
-            <a href="new.html">New Task</a>
+            <a href="edit.html">New Task</a>
         </header>
 
-        <h2>Current Task</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Current Task</h2>
+            <a id="editLink" href="#" style="background: #eee; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: #333;">Edit</a>
+        </div>
         
         <div id="taskDisplay">
             <div class="form-group">
@@ -46,6 +49,7 @@
             }
 
             if (task) {
+                document.getElementById('editLink').href = `edit.html#${task.id}`;
                 document.getElementById('contentDisplay').textContent = task.content;
                 
                 const list = document.getElementById('attachmentList');

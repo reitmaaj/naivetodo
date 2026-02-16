@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Task</title>
+    <title>Edit Task</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
             <a href="index.html">Home</a>
         </header>
 
-        <h2>New Task</h2>
+        <h2 id="pageTitle">New Task</h2>
         
         <form id="taskForm">
             <div class="form-group">
@@ -22,7 +22,7 @@
 
             <div class="form-group">
                 <label>Attachments</label>
-                <ul id="pendingFilesList" style="list-style: none; padding: 0;"></ul>
+                <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
                 
                 <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">
                     <label style="font-size: 0.9em;">Add File</label>
@@ -33,29 +33,93 @@
                 </div>
             </div>
 
-            <button type="submit">Create Task</button>
+            <button type="submit" id="saveBtn">Save</button>
+            <button type="button" id="deleteBtn" class="danger">Delete</button>
         </form>
     </div>
     <script src="app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const pendingFiles = [];
+        document.addEventListener('DOMContentLoaded', async () => {
+            const taskId = window.location.hash.substring(1);
+            const isEditMode = !!taskId;
+            
+            let task = null;
+            let filesToDelete = [];
+            let pendingFiles = [];
 
-            function renderFiles() {
-                const list = document.getElementById('pendingFilesList');
+            if (isEditMode) {
+                document.getElementById('pageTitle').textContent = 'Edit Task';
+                task = app.getTask(taskId);
+                
+                if (!task) {
+                    await app.init();
+                    task = app.getTask(taskId);
+                }
+
+                if (!task) {
+                    alert('Task not found');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                document.getElementById('content').value = task.content;
+            } else {
+                document.getElementById('pageTitle').textContent = 'New Task';
+            }
+
+            function renderAttachments() {
+                const list = document.getElementById('attachmentList');
                 list.innerHTML = '';
+
+                // 1. Existing Attachments (Edit Mode only)
+                if (task && task.attachment) {
+                    task.attachment.forEach(att => {
+                        if (filesToDelete.includes(att.name)) return;
+
+                        const li = document.createElement('li');
+                        li.style.display = 'flex';
+                        li.style.justifyContent = 'space-between';
+                        li.style.alignItems = 'center';
+                        li.style.marginBottom = '5px';
+                        li.style.padding = '5px';
+                        li.style.border = '1px solid #eee';
+
+                        const a = document.createElement('a');
+                        a.href = att.url;
+                        a.textContent = att.name;
+                        a.target = '_blank';
+
+                        const delBtn = document.createElement('button');
+                        delBtn.textContent = 'Remove';
+                        delBtn.className = 'danger';
+                        delBtn.type = 'button';
+                        delBtn.style.fontSize = '0.7em';
+                        delBtn.style.padding = '2px 5px';
+                        delBtn.onclick = () => {
+                            filesToDelete.push(att.name);
+                            renderAttachments();
+                        };
+
+                        li.appendChild(a);
+                        li.appendChild(delBtn);
+                        list.appendChild(li);
+                    });
+                }
+
+                // 2. Pending Files
                 pendingFiles.forEach((file, index) => {
                     const li = document.createElement('li');
-                    li.style.marginBottom = '5px';
-                    li.style.padding = '5px';
-                    li.style.border = '1px solid #eee';
                     li.style.display = 'flex';
                     li.style.justifyContent = 'space-between';
                     li.style.alignItems = 'center';
-                    
+                    li.style.marginBottom = '5px';
+                    li.style.padding = '5px';
+                    li.style.border = '1px dashed #ccc';
+                    li.style.backgroundColor = '#fafafa';
+
                     const span = document.createElement('span');
-                    span.textContent = file.name;
-                    
+                    span.textContent = `(New) ${file.name}`;
+
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = 'Remove';
                     removeBtn.className = 'danger';
@@ -64,7 +128,7 @@
                     removeBtn.style.padding = '2px 5px';
                     removeBtn.onclick = () => {
                         pendingFiles.splice(index, 1);
-                        renderFiles();
+                        renderAttachments();
                     };
 
                     li.appendChild(span);
@@ -73,25 +137,60 @@
                 });
             }
 
+            renderAttachments();
+
+            // Add File
             document.getElementById('addFileBtn').addEventListener('click', () => {
                 const fileInput = document.getElementById('fileInput');
                 if (fileInput.files.length > 0) {
                     pendingFiles.push(fileInput.files[0]);
-                    fileInput.value = ''; // Clear input
-                    renderFiles();
+                    fileInput.value = '';
+                    renderAttachments();
                 }
             });
 
+            // Save
             document.getElementById('taskForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
                 const content = document.getElementById('content').value;
-                
+                const btn = document.getElementById('saveBtn');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
                 try {
-                    const created = await app.createTask(content, pendingFiles);
-                    window.location.href = `current.html#${created.id}`;
+                    let resultTask;
+                    if (isEditMode) {
+                        resultTask = await app.updateTask(task.id, content, pendingFiles, filesToDelete);
+                    } else {
+                        resultTask = await app.createTask(content, pendingFiles);
+                    }
+                    window.location.href = `current.html#${resultTask.id}`;
                 } catch (err) {
-                    alert('Error creating task');
+                    console.error(err);
+                    alert('Error saving task');
+                    btn.disabled = false;
+                    btn.textContent = 'Save';
+                }
+            });
+
+            // Delete / Reset
+            document.getElementById('deleteBtn').addEventListener('click', async () => {
+                if (isEditMode) {
+                    if (confirm('Delete this task permanently?')) {
+                        try {
+                            await app.deleteTask(task.id);
+                            window.location.href = 'index.html';
+                        } catch (err) {
+                            alert('Error deleting task');
+                        }
+                    }
+                } else {
+                    // Create mode: Reset form
+                    if (confirm('Clear form?')) {
+                        document.getElementById('content').value = '';
+                        pendingFiles = [];
+                        renderAttachments();
+                    }
                 }
             });
         });
