@@ -19,11 +19,6 @@
             <input type="hidden" id="taskId">
             
             <div class="form-group">
-                <label for="name">Summary (Name)</label>
-                <input type="text" id="name" required>
-            </div>
-
-            <div class="form-group">
                 <label for="content">Content</label>
                 <textarea id="content" rows="5" required></textarea>
             </div>
@@ -53,7 +48,6 @@
 
             if (task) {
                 document.getElementById('taskId').value = task.id;
-                document.getElementById('name').value = task.name || '';
                 document.getElementById('content').value = task.content || '';
             } else {
                 alert('Task not found');
@@ -66,7 +60,6 @@
                     id: taskId,
                     "@context": "https://www.w3.org/ns/activitystreams",
                     type: "Note",
-                    name: document.getElementById('name').value,
                     content: document.getElementById('content').value,
                     tag: [
                         {
