@@ -22,13 +22,9 @@
 
             <div class="form-group">
                 <label>Attachments</label>
-                <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
-                
                 <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <label style="font-size: 0.9em;">Add Attachment</label>
-                    <input type="text" id="attName" placeholder="Name" style="margin-bottom: 5px;">
-                    <input type="text" id="attUrl" placeholder="URL (https://...)" style="margin-bottom: 5px;">
-                    <button type="button" id="addAttBtn" style="font-size: 0.8em; padding: 5px 10px;">Add</button>
+                    <label style="font-size: 0.9em;">Upload File</label>
+                    <input type="file" id="fileInput">
                 </div>
             </div>
 
@@ -38,66 +34,16 @@
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let currentAttachments = [];
-
-            function renderAttachments() {
-                const list = document.getElementById('attachmentList');
-                list.innerHTML = '';
-                currentAttachments.forEach((att, index) => {
-                    const li = document.createElement('li');
-                    li.style.marginBottom = '5px';
-                    li.style.padding = '5px';
-                    li.style.border = '1px solid #eee';
-                    li.style.display = 'flex';
-                    li.style.justifyContent = 'space-between';
-                    li.style.alignItems = 'center';
-
-                    const link = document.createElement('a');
-                    link.href = att.url || att.href;
-                    link.target = '_blank';
-                    link.textContent = att.name || 'Attachment';
-                    
-                    const delBtn = document.createElement('button');
-                    delBtn.textContent = 'Remove';
-                    delBtn.className = 'danger';
-                    delBtn.type = 'button';
-                    delBtn.style.fontSize = '0.7em';
-                    delBtn.style.padding = '2px 5px';
-                    delBtn.onclick = () => {
-                        currentAttachments.splice(index, 1);
-                        renderAttachments();
-                    };
-
-                    li.appendChild(link);
-                    li.appendChild(delBtn);
-                    list.appendChild(li);
-                });
-            }
-
-            document.getElementById('addAttBtn').addEventListener('click', () => {
-                const name = document.getElementById('attName').value;
-                const url = document.getElementById('attUrl').value;
-                if(name && url) {
-                    currentAttachments.push({
-                        type: 'Link',
-                        name: name,
-                        href: url
-                    });
-                    document.getElementById('attName').value = '';
-                    document.getElementById('attUrl').value = '';
-                    renderAttachments();
-                } else {
-                    alert('Please provide name and URL');
-                }
-            });
-
             document.getElementById('taskForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
+                const fileInput = document.getElementById('fileInput');
+                const fileToUpload = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
                 const newTask = {
                     "@context": "https://www.w3.org/ns/activitystreams",
                     type: "Note",
                     content: document.getElementById('content').value,
-                    attachment: currentAttachments,
                     tag: [
                         {
                             type: "Hashtag",
@@ -108,7 +54,7 @@
                 };
                 
                 try {
-                    const created = await app.createTask(newTask);
+                    const created = await app.createTask(newTask, fileToUpload);
                     window.location.href = `current.html#${created.id}`;
                 } catch (err) {
                     console.error(err);

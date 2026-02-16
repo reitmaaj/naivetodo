@@ -28,10 +28,8 @@
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
                 
                 <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <label style="font-size: 0.9em;">Add Attachment</label>
-                    <input type="text" id="attName" placeholder="Name" style="margin-bottom: 5px;">
-                    <input type="text" id="attUrl" placeholder="URL (https://...)" style="margin-bottom: 5px;">
-                    <button type="button" id="addAttBtn" style="font-size: 0.8em; padding: 5px 10px;">Add</button>
+                    <label style="font-size: 0.9em;">Add File</label>
+                    <input type="file" id="fileInput" style="margin-bottom: 5px;">
                 </div>
             </div>
 
@@ -51,8 +49,11 @@
 
             // Load from cache first
             let task = app.getTask(taskId);
-            let currentAttachments = [];
-            
+            // We differentiate between existing PB attachments (which we might delete)
+            // and new files to upload (which we just send)
+            // But for the UI list, we show the current state of "Task" attachments.
+            let attachmentsToDelete = []; 
+
             // If not in cache or we want to ensure freshness, we could fetch individual
             if (!task) {
                  await app.init(); // Try syncing
@@ -62,7 +63,13 @@
             function renderAttachments() {
                 const list = document.getElementById('attachmentList');
                 list.innerHTML = '';
-                currentAttachments.forEach((att, index) => {
+                
+                // Show existing attachments from the task object
+                const existing = task.attachment || [];
+                // We don't show files scheduled for deletion
+                const visible = existing.filter(a => !attachmentsToDelete.includes(a.name));
+
+                visible.forEach((att) => {
                     const li = document.createElement('li');
                     li.style.marginBottom = '5px';
                     li.style.padding = '5px';
@@ -83,8 +90,12 @@
                     delBtn.style.fontSize = '0.7em';
                     delBtn.style.padding = '2px 5px';
                     delBtn.onclick = () => {
-                        currentAttachments.splice(index, 1);
-                        renderAttachments();
+                        // Mark for deletion
+                        // We assume att.name is the filename in PB
+                        if (att.name) {
+                            attachmentsToDelete.push(att.name);
+                            renderAttachments();
+                        }
                     };
 
                     li.appendChild(link);
@@ -93,35 +104,15 @@
                 });
             }
 
-            document.getElementById('addAttBtn').addEventListener('click', () => {
-                const name = document.getElementById('attName').value;
-                const url = document.getElementById('attUrl').value;
-                if(name && url) {
-                    currentAttachments.push({
-                        type: 'Link',
-                        name: name,
-                        href: url
-                    });
-                    document.getElementById('attName').value = '';
-                    document.getElementById('attUrl').value = '';
-                    renderAttachments();
-                } else {
-                    alert('Please provide name and URL');
-                }
-            });
-
             if (task) {
                 document.getElementById('taskId').value = task.id;
                 document.getElementById('content').value = task.content || '';
                 
-                // Handle attachment property which can be array or single object
-                if (task.attachment) {
-                    if (Array.isArray(task.attachment)) {
-                        currentAttachments = [...task.attachment];
-                    } else {
-                        currentAttachments = [task.attachment];
-                    }
+                // Normalize attachments
+                if (task.attachment && !Array.isArray(task.attachment)) {
+                    task.attachment = [task.attachment];
                 }
+                
                 renderAttachments();
 
             } else {
@@ -131,12 +122,18 @@
 
             document.getElementById('taskForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                
+                // Get the new file if any
+                const fileInput = document.getElementById('fileInput');
+                const fileToUpload = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
                 const updatedTask = {
                     id: taskId,
                     "@context": "https://www.w3.org/ns/activitystreams",
                     type: "Note",
                     content: document.getElementById('content').value,
-                    attachment: currentAttachments,
+                    // We don't manually set 'attachment' array here because app.js 
+                    // handles merging PB files. We just handle deletion logic.
                     tag: [
                         {
                             type: "Hashtag",
@@ -147,8 +144,10 @@
                 };
                 
                 try {
-                    await app.updateTask(updatedTask);
+                    await app.updateTask(updatedTask, fileToUpload, attachmentsToDelete);
                     alert('Task updated!');
+                    // Reload to show new state
+                    window.location.reload();
                 } catch (err) {
                     console.error(err);
                     alert('Error updating task');
