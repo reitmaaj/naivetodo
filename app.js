@@ -200,8 +200,8 @@ const app = (() => {
         return true;
     }
 
-    function getMostDominantTask() {
-        const tasks = getTasks();
+    function getMostDominantTask(taskList) {
+        const tasks = taskList || getTasks();
         if (tasks.length === 0) return null;
 
         const metrics = tasks.map(task => {

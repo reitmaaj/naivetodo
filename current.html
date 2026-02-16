@@ -98,8 +98,8 @@
                 const otherTasks = tasks.filter(t => t.id !== taskId);
                 
                 if (otherTasks.length > 0) {
-                    const randomTask = otherTasks[Math.floor(Math.random() * otherTasks.length)];
-                    window.location.href = `current.html#${randomTask.id}`;
+                    const nextTask = app.getMostDominantTask(otherTasks);
+                    window.location.href = `current.html#${nextTask.id}`;
                     window.location.reload();
                 } else {
                     alert('No other tasks to display!');
