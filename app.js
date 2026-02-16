@@ -60,7 +60,11 @@ const app = (() => {
             body: JSON.stringify(taskData)
         });
 
-        if (!response.ok) throw new Error('Failed to create task');
+        if (!response.ok) {
+            const errData = await response.json();
+            console.error('PocketBase error:', errData);
+            throw new Error('Failed to create task: ' + JSON.stringify(errData));
+        }
         
         const createdTask = await response.json();
         
@@ -81,7 +85,11 @@ const app = (() => {
             body: JSON.stringify(taskData)
         });
 
-        if (!response.ok) throw new Error('Failed to update task');
+        if (!response.ok) {
+            const errData = await response.json();
+            console.error('PocketBase error:', errData);
+            throw new Error('Failed to update task: ' + JSON.stringify(errData));
+        }
         
         const updatedTask = await response.json();
         
