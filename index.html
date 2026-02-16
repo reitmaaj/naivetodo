@@ -12,21 +12,5 @@
         <h1>Loading Tasks...</h1>
         <p>Fetching from backend and synchronizing...</p>
     </div>
-    <script src="app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await app.init();
-            
-            // Pick a random task if available
-            const tasks = app.getTasks();
-            if (tasks.length > 0) {
-                const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
-                window.location.href = `current.html#${randomTask.id}`;
-            } else {
-                // If no tasks, go to new task page
-                window.location.href = 'new.html';
-            }
-        });
-    </script>
 </body>
 </html>
