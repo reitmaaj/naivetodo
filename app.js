@@ -82,7 +82,7 @@ const app = (() => {
         formData.append('task', taskData.content);
 
         if (fileToUpload) {
-            formData.append('attachments', fileToUpload);
+            formData.append('attachments+', fileToUpload);
         }
 
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records`, {

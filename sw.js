@@ -1,5 +1,6 @@
 const CACHE_NAME = 'astodo-v1';
 const ASSETS_TO_CACHE = [
+  /*
   './',
   './index.html',
   './current.html',
@@ -7,6 +8,7 @@ const ASSETS_TO_CACHE = [
   './style.css',
   './app.js',
   './manifest.json'
+  */
 ];
 
 self.addEventListener('install', (event) => {
