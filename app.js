@@ -30,7 +30,8 @@ const app = (() => {
             if (!response.ok) throw new Error('Failed to fetch tasks');
             
             const data = await response.json();
-            // PocketBase returns items in data.items
+            // PocketBase returns items in data.items.
+            // We store the raw records (id, task field, etc)
             setCachedTasks(data.items);
             console.log('Tasks synchronized with backend');
         } catch (error) {
@@ -39,25 +40,41 @@ const app = (() => {
         }
     }
 
+    // Helper to flatten PB record into a usable task object
+    function flattenTask(record) {
+        if (!record) return null;
+        // Merge the inner 'task' JSON with the record's 'id'
+        // If 'task' is not an object, handle gracefully
+        const inner = (typeof record.task === 'object' && record.task !== null) ? record.task : {};
+        return {
+            ...inner,
+            id: record.id
+        };
+    }
+
     function getTasks() {
-        return getCachedTasks();
+        const records = getCachedTasks();
+        return records.map(flattenTask);
     }
 
     function getTask(id) {
-        const tasks = getCachedTasks();
-        return tasks.find(t => t.id === id);
+        const records = getCachedTasks();
+        const record = records.find(r => r.id === id);
+        return flattenTask(record);
     }
 
     async function createTask(taskData) {
-        // ActivityStreams 2.0 structure implies we send specific fields.
-        // PocketBase expects a flat JSON structure usually, but we will send
-        // what the user requested.
+        // Wrap the ActivityStreams object into the 'task' field required by DB
+        const payload = {
+            task: taskData
+        };
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(taskData)
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -66,23 +83,30 @@ const app = (() => {
             throw new Error('Failed to create task: ' + JSON.stringify(errData));
         }
         
-        const createdTask = await response.json();
+        const createdRecord = await response.json();
         
         // Update local cache manually to avoid full re-fetch
         const tasks = getCachedTasks();
-        tasks.push(createdTask);
+        tasks.push(createdRecord);
         setCachedTasks(tasks);
         
-        return createdTask;
+        return flattenTask(createdRecord);
     }
 
     async function updateTask(taskData) {
-        const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${taskData.id}`, {
+        // Extract ID, wrap the rest into 'task' field
+        const { id, ...innerTask } = taskData;
+        
+        const payload = {
+            task: innerTask
+        };
+
+        const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(taskData)
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -91,17 +115,17 @@ const app = (() => {
             throw new Error('Failed to update task: ' + JSON.stringify(errData));
         }
         
-        const updatedTask = await response.json();
+        const updatedRecord = await response.json();
         
         // Update local cache
         const tasks = getCachedTasks();
-        const index = tasks.findIndex(t => t.id === updatedTask.id);
+        const index = tasks.findIndex(t => t.id === updatedRecord.id);
         if (index !== -1) {
-            tasks[index] = updatedTask;
+            tasks[index] = updatedRecord;
             setCachedTasks(tasks);
         }
         
-        return updatedTask;
+        return flattenTask(updatedRecord);
     }
 
     async function deleteTask(id) {
