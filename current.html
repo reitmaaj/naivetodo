@@ -15,28 +15,63 @@
 
         <h2>Current Task</h2>
         
-        <form id="taskForm">
-            <input type="hidden" id="taskId">
-            
+        <div id="taskDisplay">
             <div class="form-group">
-                <label for="content">Content</label>
-                <textarea id="content" rows="5" required></textarea>
+                <label>Content</label>
+                <div id="contentDisplay" style="white-space: pre-wrap; background: #fafafa; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></div>
             </div>
 
             <div class="form-group">
                 <label>Attachments</label>
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
-                
-                <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <label style="font-size: 0.9em;">Add File</label>
-                    <input type="file" id="fileInput" style="margin-bottom: 5px;">
-                </div>
             </div>
-
-            <button type="submit">Update Task</button>
-            <button type="button" id="doLaterBtn" class="secondary">Do Later</button>
-            <button type="button" id="deleteBtn" class="danger">Delete</button>
-        </form>
+        </div>
     </div>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const taskId = window.location.hash.substring(1);
+            
+            if (!taskId) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            let task = app.getTask(taskId);
+            
+            // If task not found in cache (e.g. direct link), try to sync
+            if (!task) {
+                await app.init();
+                task = app.getTask(taskId);
+            }
+
+            if (task) {
+                document.getElementById('contentDisplay').textContent = task.content;
+                
+                const list = document.getElementById('attachmentList');
+                list.innerHTML = '';
+                
+                if (task.attachment && task.attachment.length > 0) {
+                    task.attachment.forEach(att => {
+                        const li = document.createElement('li');
+                        li.style.marginBottom = '5px';
+                        const a = document.createElement('a');
+                        a.href = att.url;
+                        a.textContent = att.name;
+                        a.target = '_blank';
+                        li.appendChild(a);
+                        list.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No attachments';
+                    li.style.color = '#777';
+                    list.appendChild(li);
+                }
+            } else {
+                document.getElementById('contentDisplay').textContent = 'Task not found.';
+            }
+        });
+    </script>
 </body>
 </html>
