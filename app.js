@@ -143,6 +143,7 @@ const app = (() => {
     async function updateTask(id, content, filesToAdd = [], filesToDelete = []) {
         const formData = new FormData();
         formData.append('content', content);
+        formData.append('edited', new Date().toISOString());
 
         filesToAdd.forEach(file => {
             formData.append('attachments+', file);
