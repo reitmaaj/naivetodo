@@ -41,16 +41,7 @@
                 const fileToUpload = fileInput.files.length > 0 ? fileInput.files[0] : null;
 
                 const newTask = {
-                    "@context": "https://www.w3.org/ns/activitystreams",
-                    type: "Note",
-                    content: document.getElementById('content').value,
-                    tag: [
-                        {
-                            type: "Hashtag",
-                            href: "https://example.com/tags/task",
-                            name: "#task"
-                        }
-                    ]
+                    content: document.getElementById('content').value
                 };
                 
                 try {
