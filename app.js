@@ -112,6 +112,34 @@ const app = (() => {
         return flattenTask(record);
     }
 
+    async function patchTask(id, data) {
+        const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            console.error('PocketBase error:', errData);
+            throw new Error('Failed to patch task');
+        }
+        
+        const updatedRecord = await response.json();
+        
+        // Update local cache
+        const tasks = getCachedTasks();
+        const index = tasks.findIndex(t => t.id === updatedRecord.id);
+        if (index !== -1) {
+            tasks[index] = updatedRecord;
+            setCachedTasks(tasks);
+        }
+        
+        return flattenTask(updatedRecord);
+    }
+
     async function updateTask(id, content, filesToAdd = [], filesToDelete = []) {
         const formData = new FormData();
         formData.append('content', content);
@@ -169,6 +197,7 @@ const app = (() => {
         getTask,
         createTask,
         updateTask,
+        patchTask,
         deleteTask
     };
 })();

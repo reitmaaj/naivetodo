@@ -95,7 +95,21 @@
             };
 
             document.getElementById('doneBtn').addEventListener('click', loadNextTask);
-            document.getElementById('doLaterBtn').addEventListener('click', loadNextTask);
+            
+            document.getElementById('doLaterBtn').addEventListener('click', async () => {
+                const btn = document.getElementById('doLaterBtn');
+                btn.disabled = true;
+                
+                try {
+                    await app.patchTask(taskId, {
+                        delayed: new Date().toISOString()
+                    });
+                } catch (e) {
+                    console.error('Failed to delay task:', e);
+                }
+                
+                loadNextTask();
+            });
         });
     </script>
 </body>
