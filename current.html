@@ -28,6 +28,11 @@
                 <label>Attachments</label>
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
             </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" id="doneBtn" style="flex: 1; background-color: #28a745;">Done</button>
+                <button type="button" id="doLaterBtn" class="secondary" style="flex: 1; margin-left: 0;">Do Later</button>
+            </div>
         </form>
     </div>
     <script src="app.js"></script>
@@ -75,6 +80,22 @@
             } else {
                 document.getElementById('content').value = 'Task not found.';
             }
+
+            const loadNextTask = () => {
+                const tasks = app.getTasks();
+                const otherTasks = tasks.filter(t => t.id !== taskId);
+                
+                if (otherTasks.length > 0) {
+                    const randomTask = otherTasks[Math.floor(Math.random() * otherTasks.length)];
+                    window.location.href = `current.html#${randomTask.id}`;
+                    window.location.reload();
+                } else {
+                    alert('No other tasks to display!');
+                }
+            };
+
+            document.getElementById('doneBtn').addEventListener('click', loadNextTask);
+            document.getElementById('doLaterBtn').addEventListener('click', loadNextTask);
         });
     </script>
 </body>
