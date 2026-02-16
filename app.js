@@ -45,8 +45,12 @@ const app = (() => {
         if (!record) return null;
         
         let attachments = [];
-        if (record.attachments && Array.isArray(record.attachments)) {
-            attachments = record.attachments.map(filename => ({
+        // Handle both 'attachments' (plural) and 'attachment' (singular) fields
+        // Handle both array (multiple) and string (single) values
+        const raw = record.attachments || record.attachment;
+        if (raw) {
+            const list = Array.isArray(raw) ? raw : [raw];
+            attachments = list.map(filename => ({
                 type: 'Document',
                 name: filename,
                 url: `${PB_URL}/api/files/${COLLECTION}/${record.id}/${filename}`
@@ -57,7 +61,7 @@ const app = (() => {
             id: record.id,
             content: record.task || record.content || "",
             attachment: attachments,
-            _pb_attachments: record.attachments || []
+            _pb_attachments: raw || []
         };
     }
 
