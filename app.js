@@ -46,9 +46,31 @@ const app = (() => {
         // Merge the inner 'task' JSON with the record's 'id'
         // If 'task' is not an object, handle gracefully
         const inner = (typeof record.task === 'object' && record.task !== null) ? record.task : {};
+        
+        // Map PB attachments to ActivityStreams attachments if they aren't already
+        // This is a simplification; in a real AS2 app we might want strict control, 
+        // but here we just want to ensure uploaded files show up as AS2 attachments.
+        let asAttachments = inner.attachment || [];
+        if (!Array.isArray(asAttachments)) asAttachments = [asAttachments];
+        
+        if (record.attachments && Array.isArray(record.attachments)) {
+            const pbFiles = record.attachments.map(filename => ({
+                type: 'Document',
+                name: filename,
+                url: `${PB_URL}/api/files/${COLLECTION}/${record.id}/${filename}`
+            }));
+            
+            // Merge pbFiles into asAttachments if not already present (deduplication logic skipped for simplicity)
+            // or just use PB files as the source of truth for "attachment" property in this view
+            asAttachments = [...asAttachments, ...pbFiles];
+        }
+
         return {
             ...inner,
-            id: record.id
+            id: record.id,
+            attachment: asAttachments,
+            // Store the raw attachments filename(s) from PB so we can build URLs or manage them
+            _pb_attachments: record.attachments || []
         };
     }
 
