@@ -112,7 +112,7 @@ const app = (() => {
         formData.append('content', content);
 
         filesToAdd.forEach(file => {
-            formData.append('attachments', file);
+            formData.append('attachments+', file);
         });
 
         filesToDelete.forEach(filename => {
