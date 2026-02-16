@@ -60,9 +60,11 @@ const app = (() => {
                 url: `${PB_URL}/api/files/${COLLECTION}/${record.id}/${filename}`
             }));
             
-            // Merge pbFiles into asAttachments if not already present (deduplication logic skipped for simplicity)
-            // or just use PB files as the source of truth for "attachment" property in this view
-            asAttachments = [...asAttachments, ...pbFiles];
+            // Deduplicate: only add PB files if not already in JSON attachment list (by URL)
+            const existingUrls = new Set(asAttachments.map(a => a.url));
+            const newPbFiles = pbFiles.filter(f => !existingUrls.has(f.url));
+            
+            asAttachments = [...asAttachments, ...newPbFiles];
         }
 
         return {

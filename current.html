@@ -127,13 +127,16 @@
                 const fileInput = document.getElementById('fileInput');
                 const fileToUpload = fileInput.files.length > 0 ? fileInput.files[0] : null;
 
+                // Prepare existing attachments for the JSON payload
+                // We exclude those marked for deletion
+                const currentAttachments = (task.attachment || []).filter(a => !attachmentsToDelete.includes(a.name));
+
                 const updatedTask = {
                     id: taskId,
                     "@context": "https://www.w3.org/ns/activitystreams",
                     type: "Note",
                     content: document.getElementById('content').value,
-                    // We don't manually set 'attachment' array here because app.js 
-                    // handles merging PB files. We just handle deletion logic.
+                    attachment: currentAttachments,
                     tag: [
                         {
                             type: "Hashtag",
