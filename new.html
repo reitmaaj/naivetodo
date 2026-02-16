@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Task</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html">Home</a>
+        </header>
+
+        <h2>New Task</h2>
+        
+        <form id="taskForm">
+            <div class="form-group">
+                <label for="name">Summary (Name)</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" rows="5" required></textarea>
+            </div>
+
+            <button type="submit">Create Task</button>
+        </form>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('taskForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newTask = {
+                    type: "Note",
+                    name: document.getElementById('name').value,
+                    content: document.getElementById('content').value
+                };
+                
+                try {
+                    const created = await app.createTask(newTask);
+                    window.location.href = `current.html#${created.id}`;
+                } catch (err) {
+                    console.error(err);
+                    alert('Error creating task');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Task</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html">Home</a> | 
+            <a href="new.html">New Task</a>
+        </header>
+
+        <h2>Current Task</h2>
+        
+        <form id="taskForm">
+            <input type="hidden" id="taskId">
+            
+            <div class="form-group">
+                <label for="name">Summary (Name)</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content</label>
+                <textarea id="content" rows="5" required></textarea>
+            </div>
+
+            <button type="submit">Update Task</button>
+            <button type="button" id="deleteBtn" class="danger">Delete</button>
+        </form>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const taskId = window.location.hash.substring(1);
+            if (!taskId) {
+                alert('No task ID provided');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Load from cache first
+            let task = app.getTask(taskId);
+            
+            // If not in cache or we want to ensure freshness, we could fetch individual
+            if (!task) {
+                 await app.init(); // Try syncing
+                 task = app.getTask(taskId);
+            }
+
+            if (task) {
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('name').value = task.name || '';
+                document.getElementById('content').value = task.content || '';
+            } else {
+                alert('Task not found');
+                window.location.href = 'index.html';
+            }
+
+            document.getElementById('taskForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const updatedTask = {
+                    id: taskId,
+                    type: "Note",
+                    name: document.getElementById('name').value,
+                    content: document.getElementById('content').value
+                };
+                
+                try {
+                    await app.updateTask(updatedTask);
+                    alert('Task updated!');
+                } catch (err) {
+                    console.error(err);
+                    alert('Error updating task');
+                }
+            });
+
+            document.getElementById('deleteBtn').addEventListener('click', async () => {
+                if(confirm('Delete this task?')) {
+                    try {
+                        await app.deleteTask(taskId);
+                        window.location.href = 'index.html';
+                    } catch (err) {
+                        console.error(err);
+                        alert('Error deleting task');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
