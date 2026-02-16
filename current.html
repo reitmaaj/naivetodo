@@ -24,6 +24,11 @@
                 <textarea id="content" rows="5" readonly></textarea>
             </div>
 
+            <div class="form-group" id="deadlineGroup" style="display: none;">
+                <label>Deadline</label>
+                <div id="deadlineDisplay" style="padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+
             <div class="form-group">
                 <label>Attachments</label>
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
@@ -57,6 +62,13 @@
                 document.getElementById('editLink').href = `edit.html#${task.id}`;
                 document.getElementById('content').value = task.content;
                 
+                if (task.deadline) {
+                    document.getElementById('deadlineGroup').style.display = 'block';
+                    document.getElementById('deadlineDisplay').textContent = new Date(task.deadline).toLocaleString();
+                } else {
+                    document.getElementById('deadlineGroup').style.display = 'none';
+                }
+
                 const list = document.getElementById('attachmentList');
                 list.innerHTML = '';
                 

@@ -21,6 +21,11 @@
             </div>
 
             <div class="form-group">
+                <label for="deadline">Deadline</label>
+                <input type="datetime-local" id="deadline">
+            </div>
+
+            <div class="form-group">
                 <label>Attachments</label>
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
                 
@@ -63,6 +68,11 @@
                 }
 
                 document.getElementById('content').value = task.content;
+                if (task.deadline) {
+                    const dt = new Date(task.deadline);
+                    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+                    document.getElementById('deadline').value = dt.toISOString().slice(0, 16);
+                }
             } else {
                 document.getElementById('pageTitle').textContent = 'New Task';
             }
@@ -153,6 +163,13 @@
             document.getElementById('taskForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const content = document.getElementById('content').value;
+                
+                const deadlineInput = document.getElementById('deadline').value;
+                let deadline = '';
+                if (deadlineInput) {
+                    deadline = new Date(deadlineInput).toISOString();
+                }
+
                 const btn = document.getElementById('saveBtn');
                 btn.disabled = true;
                 btn.textContent = 'Saving...';
@@ -160,9 +177,9 @@
                 try {
                     let resultTask;
                     if (isEditMode) {
-                        resultTask = await app.updateTask(task.id, content, pendingFiles, filesToDelete);
+                        resultTask = await app.updateTask(task.id, content, deadline, pendingFiles, filesToDelete);
                     } else {
-                        resultTask = await app.createTask(content, pendingFiles);
+                        resultTask = await app.createTask(content, deadline, pendingFiles);
                     }
                     window.location.href = `current.html#${resultTask.id}`;
                 } catch (err) {

@@ -84,9 +84,12 @@ const app = (() => {
         return flattenTask(record);
     }
 
-    async function createTask(content, files = []) {
+    async function createTask(content, deadline, files = []) {
         const formData = new FormData();
         formData.append('content', content);
+        if (deadline) {
+            formData.append('deadline', deadline);
+        }
         
         files.forEach(file => {
             formData.append('attachments', file);
@@ -140,10 +143,15 @@ const app = (() => {
         return flattenTask(updatedRecord);
     }
 
-    async function updateTask(id, content, filesToAdd = [], filesToDelete = []) {
+    async function updateTask(id, content, deadline, filesToAdd = [], filesToDelete = []) {
         const formData = new FormData();
         formData.append('content', content);
         formData.append('edited', new Date().toISOString());
+        if (deadline) {
+            formData.append('deadline', deadline);
+        } else {
+            formData.append('deadline', '');
+        }
 
         filesToAdd.forEach(file => {
             formData.append('attachments+', file);
