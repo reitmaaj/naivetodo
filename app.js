@@ -5,7 +5,7 @@ const app = (() => {
 
     async function createTask(content, files = []) {
         const formData = new FormData();
-        formData.append('task', content);
+        formData.append('content', content);
         
         files.forEach(file => {
             formData.append('attachments', file);
