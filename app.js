@@ -200,6 +200,59 @@ const app = (() => {
         return true;
     }
 
+    function getMostDominantTask() {
+        const tasks = getTasks();
+        if (tasks.length === 0) return null;
+
+        const metrics = tasks.map(task => {
+            const created = new Date(task.created).getTime();
+            // If delayed is missing, assume created time (it's been waiting since creation)
+            const delayed = task.delayed ? new Date(task.delayed).getTime() : created;
+            // If deadline is missing, assume far future
+            const deadline = task.deadline ? new Date(task.deadline).getTime() : Number.MAX_SAFE_INTEGER;
+
+            return {
+                id: task.id,
+                t1: created, // Minimize (older is better)
+                t2: delayed, // Minimize (older delay is better)
+                t3: deadline // Minimize (closer/overdue is better)
+            };
+        });
+
+        const dominanceCounts = metrics.map((candidate, i) => {
+            let count = 0;
+            metrics.forEach((target, j) => {
+                if (i === j) return;
+
+                // Candidate dominates Target if:
+                // Candidate is better (smaller) or equal in all metrics
+                // AND strictly better (smaller) in at least one
+                
+                const betterInAtLeastOne = 
+                    candidate.t1 < target.t1 || 
+                    candidate.t2 < target.t2 || 
+                    candidate.t3 < target.t3;
+
+                const worseInNone = 
+                    candidate.t1 <= target.t1 && 
+                    candidate.t2 <= target.t2 && 
+                    candidate.t3 <= target.t3;
+
+                if (betterInAtLeastOne && worseInNone) {
+                    count++;
+                }
+            });
+            return { index: i, count };
+        });
+
+        const maxCount = Math.max(...dominanceCounts.map(d => d.count));
+        const winners = dominanceCounts
+            .filter(d => d.count === maxCount)
+            .map(d => tasks[d.index]);
+
+        return winners[Math.floor(Math.random() * winners.length)];
+    }
+
     return {
         init,
         getTasks,
@@ -207,6 +260,7 @@ const app = (() => {
         createTask,
         updateTask,
         patchTask,
-        deleteTask
+        deleteTask,
+        getMostDominantTask
     };
 })();
