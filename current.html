@@ -18,17 +18,17 @@
             <a id="editLink" href="#" style="background: #eee; padding: 5px 10px; border-radius: 4px; text-decoration: none; color: #333;">Edit</a>
         </div>
         
-        <div id="taskDisplay">
+        <form>
             <div class="form-group">
-                <label>Content</label>
-                <div id="contentDisplay" style="white-space: pre-wrap; background: #fafafa; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                <label for="content">Content</label>
+                <textarea id="content" rows="5" readonly></textarea>
             </div>
 
             <div class="form-group">
                 <label>Attachments</label>
                 <ul id="attachmentList" style="list-style: none; padding: 0;"></ul>
             </div>
-        </div>
+        </form>
     </div>
     <script src="app.js"></script>
     <script>
@@ -50,7 +50,7 @@
 
             if (task) {
                 document.getElementById('editLink').href = `edit.html#${task.id}`;
-                document.getElementById('contentDisplay').textContent = task.content;
+                document.getElementById('content').value = task.content;
                 
                 const list = document.getElementById('attachmentList');
                 list.innerHTML = '';
@@ -73,7 +73,7 @@
                     list.appendChild(li);
                 }
             } else {
-                document.getElementById('contentDisplay').textContent = 'Task not found.';
+                document.getElementById('content').value = 'Task not found.';
             }
         });
     </script>
