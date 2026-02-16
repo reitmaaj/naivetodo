@@ -53,7 +53,12 @@ const app = (() => {
         return {
             id: record.id,
             content: record.task || record.content || "",
-            attachment: attachments
+            attachment: attachments,
+            created: record.created,
+            updated: record.updated,
+            edited: record.edited,
+            deadline: record.deadline,
+            delayed: record.delayed
         };
     }
 
