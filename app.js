@@ -9,6 +9,10 @@ const app = (() => {
         return stored ? JSON.parse(stored) : [];
     }
 
+    function setCachedTasks(tasks) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(tasks));
+    }
+
     function flattenTask(record) {
         if (!record) return null;
         
