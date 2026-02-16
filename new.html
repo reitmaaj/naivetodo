@@ -22,9 +22,14 @@
 
             <div class="form-group">
                 <label>Attachments</label>
+                <ul id="pendingFilesList" style="list-style: none; padding: 0;"></ul>
+                
                 <div style="margin-top: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #ddd;">
-                    <label style="font-size: 0.9em;">Upload File</label>
-                    <input type="file" id="fileInput">
+                    <label style="font-size: 0.9em;">Add File</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="file" id="fileInput">
+                        <button type="button" id="addFileBtn" style="font-size: 0.8em; padding: 5px 10px;">Add</button>
+                    </div>
                 </div>
             </div>
 
@@ -34,13 +39,56 @@
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const pendingFiles = [];
+
+            function renderFiles() {
+                const list = document.getElementById('pendingFilesList');
+                list.innerHTML = '';
+                pendingFiles.forEach((file, index) => {
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '5px';
+                    li.style.padding = '5px';
+                    li.style.border = '1px solid #eee';
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.style.alignItems = 'center';
+                    
+                    const span = document.createElement('span');
+                    span.textContent = file.name;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.className = 'danger';
+                    removeBtn.type = 'button';
+                    removeBtn.style.fontSize = '0.7em';
+                    removeBtn.style.padding = '2px 5px';
+                    removeBtn.onclick = () => {
+                        pendingFiles.splice(index, 1);
+                        renderFiles();
+                    };
+
+                    li.appendChild(span);
+                    li.appendChild(removeBtn);
+                    list.appendChild(li);
+                });
+            }
+
+            document.getElementById('addFileBtn').addEventListener('click', () => {
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput.files.length > 0) {
+                    pendingFiles.push(fileInput.files[0]);
+                    fileInput.value = ''; // Clear input
+                    renderFiles();
+                }
+            });
+
             document.getElementById('taskForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const content = document.getElementById('content').value;
                 
                 try {
-                    const created = await app.createTask(content);
+                    const created = await app.createTask(content, pendingFiles);
                     window.location.href = `current.html#${created.id}`;
                 } catch (err) {
                     alert('Error creating task');

@@ -3,15 +3,17 @@ const app = (() => {
     const PB_URL = 'http://localhost:8090';
     const COLLECTION = 'tasks';
 
-    async function createTask(content) {
+    async function createTask(content, files = []) {
+        const formData = new FormData();
+        formData.append('task', content);
+        
+        files.forEach(file => {
+            formData.append('attachments', file);
+        });
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                task: content
-            })
+            body: formData
         });
 
         if (!response.ok) {
