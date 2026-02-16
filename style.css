@@ -66,3 +66,12 @@ button.danger {
 button.danger:hover {
     background-color: #bd2130;
 }
+
+button.secondary {
+    background-color: #6c757d;
+    margin-left: 10px;
+}
+
+button.secondary:hover {
+    background-color: #5a6268;
+}
