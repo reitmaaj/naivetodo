@@ -214,23 +214,6 @@ const app = (() => {
         
         return flattenTask(updatedRecord);
     }
-            const errData = await response.json();
-            console.error('PocketBase error:', errData);
-            throw new Error('Failed to update task: ' + JSON.stringify(errData));
-        }
-        
-        const updatedRecord = await response.json();
-        
-        // Update local cache
-        const tasks = getCachedTasks();
-        const index = tasks.findIndex(t => t.id === updatedRecord.id);
-        if (index !== -1) {
-            tasks[index] = updatedRecord;
-            setCachedTasks(tasks);
-        }
-        
-        return flattenTask(updatedRecord);
-    }
 
     async function deleteTask(id) {
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
