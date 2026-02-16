@@ -64,9 +64,17 @@
                 e.preventDefault();
                 const updatedTask = {
                     id: taskId,
+                    "@context": "https://www.w3.org/ns/activitystreams",
                     type: "Note",
                     name: document.getElementById('name').value,
-                    content: document.getElementById('content').value
+                    content: document.getElementById('content').value,
+                    tag: [
+                        {
+                            type: "Hashtag",
+                            href: "https://example.com/tags/task",
+                            name: "#task"
+                        }
+                    ]
                 };
                 
                 try {
