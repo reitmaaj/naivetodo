@@ -235,37 +235,41 @@ const app = (() => {
             };
         });
 
+        // Calculate "Dominated Count" - how many other tasks are better than this one?
+        // We want to pick tasks that are dominated by 0 others (Pareto frontier),
+        // or as few as possible.
         const dominanceCounts = metrics.map((candidate, i) => {
-            let count = 0;
+            let dominatedByCount = 0;
             metrics.forEach((target, j) => {
                 if (i === j) return;
 
-                // Candidate dominates Target if:
-                // Candidate is better (smaller) or equal in all metrics
+                // Check if Target dominates Candidate
+                // Target is better (smaller) or equal in all metrics
                 // AND strictly better (smaller) in at least one
                 
-                const betterInAtLeastOne = 
-                    candidate.t1 < target.t1 || 
-                    candidate.t2 < target.t2 || 
-                    candidate.t3 < target.t3 ||
-                    candidate.t4 < target.t4;
+                const targetBetterInAtLeastOne = 
+                    target.t1 < candidate.t1 || 
+                    target.t2 < candidate.t2 || 
+                    target.t3 < candidate.t3 ||
+                    target.t4 < candidate.t4;
 
-                const worseInNone = 
-                    candidate.t1 <= target.t1 && 
-                    candidate.t2 <= target.t2 && 
-                    candidate.t3 <= target.t3 &&
-                    candidate.t4 <= target.t4;
+                const targetWorseInNone = 
+                    target.t1 <= candidate.t1 && 
+                    target.t2 <= candidate.t2 && 
+                    target.t3 <= candidate.t3 && 
+                    target.t4 <= candidate.t4;
 
-                if (betterInAtLeastOne && worseInNone) {
-                    count++;
+                if (targetBetterInAtLeastOne && targetWorseInNone) {
+                    dominatedByCount++;
                 }
             });
-            return { index: i, count };
+            return { index: i, count: dominatedByCount };
         });
 
-        const maxCount = Math.max(...dominanceCounts.map(d => d.count));
+        // We want the tasks with the MINIMUM count (least dominated)
+        const minCount = Math.min(...dominanceCounts.map(d => d.count));
         const winners = dominanceCounts
-            .filter(d => d.count === maxCount)
+            .filter(d => d.count === minCount)
             .map(d => tasks[d.index]);
 
         return winners[Math.floor(Math.random() * winners.length)];
