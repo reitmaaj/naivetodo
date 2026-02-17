@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Task Randomizer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Settings</h1>
+            <a href="index.html" style="float: right; text-decoration: none;">&larr; Back</a>
+        </header>
+
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="serverUrl">Server URL</label>
+                <input type="text" id="serverUrl" placeholder="https://your-pocketbase-url.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" placeholder="user@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="********" required>
+            </div>
+
+            <button type="submit">Save Settings</button>
+            <span id="statusMessage" style="margin-left: 10px; color: green;"></span>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const serverUrlInput = document.getElementById('serverUrl');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const statusMessage = document.getElementById('statusMessage');
+
+            // Load saved settings
+            serverUrlInput.value = localStorage.getItem('PB_URL') || '';
+            emailInput.value = localStorage.getItem('PB_EMAIL') || '';
+            passwordInput.value = localStorage.getItem('PB_PASSWORD') || '';
+
+            document.getElementById('settingsForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // Save settings
+                localStorage.setItem('PB_URL', serverUrlInput.value.trim());
+                localStorage.setItem('PB_EMAIL', emailInput.value.trim());
+                localStorage.setItem('PB_PASSWORD', passwordInput.value);
+
+                statusMessage.textContent = 'Saved!';
+                setTimeout(() => {
+                    statusMessage.textContent = '';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
