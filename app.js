@@ -58,7 +58,8 @@ const app = (() => {
             updated: record.updated,
             edited: record.edited,
             deadline: record.deadline,
-            delayed: record.delayed
+            delayed: record.delayed,
+            done: record.done
         };
     }
 

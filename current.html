@@ -119,7 +119,20 @@
                 }
             };
 
-            document.getElementById('doneBtn').addEventListener('click', loadNextTask);
+            document.getElementById('doneBtn').addEventListener('click', async () => {
+                const btn = document.getElementById('doneBtn');
+                btn.disabled = true;
+
+                try {
+                    await app.patchTask(taskId, {
+                        done: new Date().toISOString()
+                    });
+                } catch (e) {
+                    console.error('Failed to mark task as done:', e);
+                }
+
+                loadNextTask();
+            });
             
             document.getElementById('doLaterBtn').addEventListener('click', async () => {
                 const btn = document.getElementById('doLaterBtn');
