@@ -1,7 +1,7 @@
 {
   "name": "Naive TODO",
   "short_name": "nTODO",
-  "start_url": "/naivetodo/index.html",
+  "start_url": "/naivetodo/",
   "scope": "/naivetodo/",
   "display": "standalone",
   "background_color": "#ffffff",
