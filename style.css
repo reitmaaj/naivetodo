@@ -35,7 +35,7 @@ label {
     font-weight: bold;
 }
 
-input[type="text"], textarea {
+input[type="text"], input[type="password"], textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
