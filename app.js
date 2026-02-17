@@ -1,6 +1,6 @@
 const app = (() => {
     // Configuration
-    const PB_URL = 'http://localhost:8090';
+    const PB_URL = localStorage.getItem('PB_URL') || 'http://localhost:8090';
     const COLLECTION = 'tasks';
     const CACHE_KEY = 'astodo_tasks';
 
