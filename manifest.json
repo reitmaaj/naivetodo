@@ -8,7 +8,7 @@
   "theme_color": "#007bff",
   "icons": [
     {
-      "src": "/naivetodo/assets/icon-512x512.png",
+      "src": "/naivetodo/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
