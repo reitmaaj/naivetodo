@@ -43,7 +43,8 @@
             </div>
 
             <button type="submit" id="saveBtn">Save</button>
-            <button type="button" id="deleteBtn" class="danger">Delete</button>
+            <button type="button" id="cancelBtn" class="secondary">Cancel</button>
+            <button type="button" id="deleteBtn" class="danger" style="display: none;">Delete</button>
         </form>
     </div>
     <script src="app.js"></script>
@@ -58,6 +59,7 @@
 
             if (isEditMode) {
                 document.getElementById('pageTitle').textContent = 'Edit Task';
+                document.getElementById('deleteBtn').style.display = 'inline-block';
                 task = app.getTask(taskId);
                 
                 if (!task) {
@@ -195,23 +197,23 @@
                 }
             });
 
-            // Delete / Reset
-            document.getElementById('deleteBtn').addEventListener('click', async () => {
+            // Cancel
+            document.getElementById('cancelBtn').addEventListener('click', () => {
                 if (isEditMode) {
-                    if (confirm('Delete this task permanently?')) {
-                        try {
-                            await app.deleteTask(task.id);
-                            window.location.href = 'index.html';
-                        } catch (err) {
-                            alert('Error deleting task');
-                        }
-                    }
+                    window.location.href = `current.html#${task.id}`;
                 } else {
-                    // Create mode: Reset form
-                    if (confirm('Clear form?')) {
-                        document.getElementById('content').value = '';
-                        pendingFiles = [];
-                        renderAttachments();
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // Delete
+            document.getElementById('deleteBtn').addEventListener('click', async () => {
+                if (confirm('Delete this task permanently?')) {
+                    try {
+                        await app.deleteTask(task.id);
+                        window.location.href = 'index.html';
+                    } catch (err) {
+                        alert('Error deleting task');
                     }
                 }
             });
