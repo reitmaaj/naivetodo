@@ -46,11 +46,21 @@
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const taskId = window.location.hash.substring(1);
+            let taskId = window.location.hash.substring(1);
             
             if (!taskId) {
-                window.location.href = 'index.html';
-                return;
+                // If no ID provided, try to find a task to do
+                const tasks = app.getTasks();
+                if (tasks.length > 0) {
+                    const nextTask = app.getMostDominantTask(tasks);
+                    taskId = nextTask.id;
+                    // Update URL without reloading
+                    history.replaceState(null, null, `#${taskId}`);
+                } else {
+                    // No tasks available, go to create new
+                    window.location.href = 'edit.html';
+                    return;
+                }
             }
 
             let task = app.getTask(taskId);
