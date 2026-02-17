@@ -35,7 +35,7 @@ label {
     font-weight: bold;
 }
 
-input[type="text"], input[type="password"], input[type="datetime-local"], textarea {
+input[type="text"], input[type="password"], input[type="date"], textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
