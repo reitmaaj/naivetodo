@@ -47,29 +47,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             let taskId = window.location.hash.substring(1);
+
+            // If we don't have an ID, or if we do but the task isn't in cache, ensure we are synced
+            if (!taskId || !app.getTask(taskId)) {
+                await app.init();
+            }
             
             if (!taskId) {
-                // If no ID provided, try to find a task to do
                 const tasks = app.getTasks();
                 if (tasks.length > 0) {
                     const nextTask = app.getMostDominantTask(tasks);
                     taskId = nextTask.id;
-                    // Update URL without reloading
-                    history.replaceState(null, null, `#${taskId}`);
+                    // Update URL to reflect the chosen task
+                    window.location.hash = taskId; 
                 } else {
-                    // No tasks available, go to create new
                     window.location.href = 'edit.html';
                     return;
                 }
             }
 
             let task = app.getTask(taskId);
-            
-            // If task not found in cache (e.g. direct link), try to sync
-            if (!task) {
-                await app.init();
-                task = app.getTask(taskId);
-            }
 
             if (task) {
                 document.getElementById('editLink').href = `edit.html#${task.id}`;
