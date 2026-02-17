@@ -58,8 +58,10 @@
                 if (tasks.length > 0) {
                     const nextTask = app.getMostDominantTask(tasks);
                     taskId = nextTask.id;
-                    // Update URL to reflect the chosen task
+                    // Update URL to reflect the chosen task and reload to render
                     window.location.hash = taskId; 
+                    window.location.reload();
+                    return;
                 } else {
                     window.location.href = 'edit.html';
                     return;
