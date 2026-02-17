@@ -65,7 +65,7 @@ const app = (() => {
 
     async function init() {
         try {
-            const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records?perPage=500&sort=-created`);
+            const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records?perPage=500&sort=-created&filter=(done='')`);
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem(CACHE_KEY, JSON.stringify(data.items));
