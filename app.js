@@ -208,14 +208,29 @@ const app = (() => {
             const created = new Date(task.created).getTime();
             // If delayed is missing, assume created time (it's been waiting since creation)
             const delayed = task.delayed ? new Date(task.delayed).getTime() : created;
-            // If deadline is missing, assume far future
-            const deadline = task.deadline ? new Date(task.deadline).getTime() : Number.MAX_SAFE_INTEGER;
+            
+            const now = Date.now();
+            let underdue = Number.MAX_SAFE_INTEGER;
+            let overdue = 0;
+
+            if (task.deadline) {
+                const deadlineTime = new Date(task.deadline).getTime();
+                if (deadlineTime > now) {
+                    underdue = deadlineTime - now;
+                    overdue = 0;
+                } else {
+                    underdue = 0;
+                    // We want to maximize overdue time, so we minimize the negative
+                    overdue = -(now - deadlineTime);
+                }
+            }
 
             return {
                 id: task.id,
-                t1: created, // Minimize (older is better)
-                t2: delayed, // Minimize (older delay is better)
-                t3: deadline // Minimize (closer/overdue is better)
+                t1: created,  // Minimize (older is better)
+                t2: delayed,  // Minimize (older delay is better)
+                t3: underdue, // Minimize (closer to deadline is better)
+                t4: overdue   // Minimize (more overdue is better, so use negative)
             };
         });
 
@@ -231,12 +246,14 @@ const app = (() => {
                 const betterInAtLeastOne = 
                     candidate.t1 < target.t1 || 
                     candidate.t2 < target.t2 || 
-                    candidate.t3 < target.t3;
+                    candidate.t3 < target.t3 ||
+                    candidate.t4 < target.t4;
 
                 const worseInNone = 
                     candidate.t1 <= target.t1 && 
                     candidate.t2 <= target.t2 && 
-                    candidate.t3 <= target.t3;
+                    candidate.t3 <= target.t3 &&
+                    candidate.t4 <= target.t4;
 
                 if (betterInAtLeastOne && worseInNone) {
                     count++;
