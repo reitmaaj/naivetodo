@@ -77,7 +77,7 @@
                 
                 if (task.deadline) {
                     document.getElementById('deadlineGroup').style.display = 'block';
-                    document.getElementById('deadlineDisplay').textContent = new Date(task.deadline).toLocaleString();
+                    document.getElementById('deadlineDisplay').textContent = new Date(task.deadline).toISOString().slice(0, 10);
                 } else {
                     document.getElementById('deadlineGroup').style.display = 'none';
                 }
