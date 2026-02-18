@@ -186,7 +186,7 @@
                     let resultTask;
                     if (isEditMode) {
                         resultTask = await app.updateTask(task.id, content, deadline, pendingFiles, filesToDelete);
-                        window.location.href = `current.html#${resultTask.id}`;
+                        window.location.href = 'current.html';
                     } else {
                         await app.createTask(content, deadline, pendingFiles);
                         // Redirect to current without ID to let the picker decide what is most important
@@ -202,11 +202,14 @@
 
             // Cancel
             document.getElementById('cancelBtn').addEventListener('click', () => {
+                window.location.href = 'current.html';
+                /*
                 if (isEditMode) {
                     window.location.href = `current.html#${task.id}`;
                 } else {
                     window.location.href = 'index.html';
                 }
+                */
             });
 
             // Delete
