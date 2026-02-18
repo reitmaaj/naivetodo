@@ -76,10 +76,7 @@
 
                 document.getElementById('content').value = task.content;
                 if (task.deadline) {
-                    const dt = new Date(task.deadline);
-                    // Adjust for local timezone to get correct date part
-                    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-                    document.getElementById('deadline').value = dt.toISOString().slice(0, 10);
+                    document.getElementById('deadline').value = new Date(task.deadline).toISOString().slice(0, 10);
                 }
             } else {
                 document.getElementById('pageTitle').textContent = 'New Task';
