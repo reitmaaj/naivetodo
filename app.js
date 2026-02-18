@@ -1,8 +1,12 @@
 const app = (() => {
     // Configuration
     const PB_URL = localStorage.getItem('PB_URL') || 'http://localhost:8090';
+    const PB_EMAIL = localStorage.getItem('PB_EMAIL');
+    const PB_PASSWORD = localStorage.getItem('PB_PASSWORD');
     const COLLECTION = 'tasks';
     const CACHE_KEY = 'astodo_tasks';
+    
+    let authToken = '';
 
     function getCachedTasks() {
         const stored = localStorage.getItem(CACHE_KEY);
@@ -63,9 +67,38 @@ const app = (() => {
         };
     }
 
+    async function authenticate() {
+        if (!PB_EMAIL || !PB_PASSWORD) return;
+
+        try {
+            const response = await fetch(`${PB_URL}/api/collections/users/auth-with-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identity: PB_EMAIL, password: PB_PASSWORD })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                authToken = data.token;
+            } else {
+                console.error("Authentication failed");
+            }
+        } catch (e) {
+            console.error("Auth error", e);
+        }
+    }
+
     async function init() {
         try {
-            const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records?perPage=500&sort=-created&filter=(done='')`);
+            await authenticate();
+            
+            const headers = {};
+            if (authToken) headers['Authorization'] = authToken;
+
+            const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records?perPage=500&sort=-created&filter=(done='')`, {
+                headers: headers
+            });
+            
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem(CACHE_KEY, JSON.stringify(data.items));
@@ -86,6 +119,8 @@ const app = (() => {
     }
 
     async function createTask(content, deadline, files = []) {
+        if (!authToken) await authenticate();
+
         const formData = new FormData();
         formData.append('content', content);
         if (deadline) {
@@ -96,8 +131,12 @@ const app = (() => {
             formData.append('attachments', file);
         });
 
+        const headers = {};
+        if (authToken) headers['Authorization'] = authToken;
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records`, {
             method: 'POST',
+            headers: headers,
             body: formData
         });
 
@@ -117,11 +156,16 @@ const app = (() => {
     }
 
     async function patchTask(id, data) {
+        if (!authToken) await authenticate();
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (authToken) headers['Authorization'] = authToken;
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: headers,
             body: JSON.stringify(data)
         });
 
@@ -145,6 +189,8 @@ const app = (() => {
     }
 
     async function updateTask(id, content, deadline, filesToAdd = [], filesToDelete = []) {
+        if (!authToken) await authenticate();
+
         const formData = new FormData();
         formData.append('content', content);
         formData.append('edited', new Date().toISOString());
@@ -162,8 +208,12 @@ const app = (() => {
             formData.append('attachments-', filename);
         });
 
+        const headers = {};
+        if (authToken) headers['Authorization'] = authToken;
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
             method: 'PATCH',
+            headers: headers,
             body: formData
         });
 
@@ -187,8 +237,14 @@ const app = (() => {
     }
 
     async function deleteTask(id) {
+        if (!authToken) await authenticate();
+
+        const headers = {};
+        if (authToken) headers['Authorization'] = authToken;
+
         const response = await fetch(`${PB_URL}/api/collections/${COLLECTION}/records/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: headers
         });
 
         if (!response.ok) throw new Error('Failed to delete task');
