@@ -186,10 +186,12 @@
                     let resultTask;
                     if (isEditMode) {
                         resultTask = await app.updateTask(task.id, content, deadline, pendingFiles, filesToDelete);
+                        window.location.href = `current.html#${resultTask.id}`;
                     } else {
-                        resultTask = await app.createTask(content, deadline, pendingFiles);
+                        await app.createTask(content, deadline, pendingFiles);
+                        // Redirect to current without ID to let the picker decide what is most important
+                        window.location.href = 'current.html';
                     }
-                    window.location.href = `current.html#${resultTask.id}`;
                 } catch (err) {
                     console.error(err);
                     alert('Error saving task');
